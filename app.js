@@ -78,30 +78,37 @@ app.get('/convert-mp3', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 app.get('/convert-mp4-test', async (req, res) => {
-  const {videoID} = req.query;
+  const { videoID } = req.query;
   const url = `https://www.youtube.com/watch?v=${videoID}`;
-    if (!ytdl.validateURL(url)) {
-        return res.status(400).json({ error: 'Invalid YouTube URL' });
+  console.log(`Received request to convert video with ID: ${videoID}`);
+
+  if (!ytdl.validateURL(url)) {
+    console.log(`Invalid YouTube URL: ${url}`);
+    return res.status(400).json({ error: 'Invalid YouTube URL' });
+  }
+
+  try {
+    const info = await ytdl.getInfo(url);
+    const format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: format => format.container === 'mp4' });
+    
+    if (!format) {
+      console.log('No suitable format found for download');
+      return res.status(400).json({ error: 'No suitable format found for download' });
     }
 
-    try {
-        const info = await ytdl.getInfo(url);
-        const format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: format=> format.container === 'mp4'});
-        
-        if (!format) {
-            return res.status(400).json({ error: 'No suitable format found for download' });
-        }
+    console.log(`Streaming video: ${info.videoDetails.title}`);
+    // Set response headers to indicate a file download
+    res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
+    res.setHeader('Content-Type', 'video/mp4');
 
-         // Set response headers to indicate a file download
-        res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
-        res.setHeader('Content-Type', 'video/mp4');
-
-        // Stream the video/audio to the response
-        ytdl(url, { format: format }).pipe(res);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // Stream the video/audio to the response
+    ytdl(url, { format: format }).pipe(res);
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/', (req, res) => {
