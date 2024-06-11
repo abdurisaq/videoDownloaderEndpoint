@@ -146,6 +146,23 @@ app.get('/search',async (req,res) => {
   }
 }
 });
+app.get('/search-q',async (req,res) => {
+  const {keyWord} = req.query;
+  if(keyWord === undefined || keyWord === ''|| keyWord === null||!keyWord){
+    res.status(418).send(`Please provide a valid videoID, not ${keyWord}`);
+  }else{
+  const fetchVideos = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyWord)}&type=video&maxResults=10&key=${process.env.YOUTUBE_API_KEY}`, {
+    "method": "GET",
+  });
+  const queryData = await fetchVideos.json();
+  if(queryData.kind === 'youtube#searchListResponse'){
+    
+    res.status(200).send(queryData.items);
+  }else{
+    res.status(400).send("An error occured in searching");
+  }
+}
+});
 app.listen(PORT, () => 
 
   console.log(`Server is running on port http://localhost:${PORT}`)
