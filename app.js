@@ -6,11 +6,10 @@ const cors = require('cors');
 const PORT = 8080|| process.env.PORT;
 const app = express();
 require('dotenv').config();
-const youtubedl = require('youtube-dl-exec').raw;
 const ytdl = require('ytdl-core');
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+//const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+//ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 app.use(express.json())
 // app.set('view engine', 'ejs');
@@ -22,6 +21,7 @@ app.use(express.json())
 // app.use(express.json());
 
 app.get('/convert-mp3-test', async (req, res) => {
+  //console.log(ffmpegInstaller.path);
   const {videoID} = req.query;
   const url = `https://www.youtube.com/watch?v=${videoID}`;
     if (!ytdl.validateURL(url)) {
